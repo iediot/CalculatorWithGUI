@@ -72,7 +72,7 @@ QString calculate(QString expression) {
     int closeCount = expression.count(')');
 
     if (openCount != closeCount) {
-        return "ERROR: Mismatched Parentheses";
+        return "ERROR";
     }
 
     while (expression.contains('(')) {
@@ -85,7 +85,7 @@ QString calculate(QString expression) {
         double innerResult = evaluate(innerExpression);
 
         if (qIsNaN(innerResult)) {
-            return "ERROR: Invalid Math";
+            return "ERROR";
         }
         expression.replace(lastOpen, firstClose - lastOpen + 1, QString::number(innerResult));
     }
@@ -93,7 +93,7 @@ QString calculate(QString expression) {
     double finalResult = evaluate(expression);
 
     if (qIsNaN(finalResult)) {
-        return "ERROR: Invalid Math";
+        return "ERROR";
     }
 
     return QString::number(finalResult);
