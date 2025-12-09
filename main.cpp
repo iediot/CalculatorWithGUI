@@ -316,7 +316,7 @@ int main(int argc, char* argv[])
         }
         if (endsWithOperator(expression) || expression.endsWith("(")) {
             display.setText("ERROR");
-            QTimer::singleShot(1000, [&display]() {
+            QTimer::singleShot(2000, [&display]() {
                 display.setText("");
             });
             return;
