@@ -2,6 +2,8 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLineEdit>
 #include <QtGui/QFont>
+#include <QRegularExpression>
+#include <QtCore/QTimer>
 
 bool endsWithNumber(const QString& text) {
     return (text.endsWith("1") ||
@@ -21,6 +23,80 @@ bool endsWithOperator(const QString& text) {
             text.endsWith(" - ") ||
             text.endsWith(" * ") ||
             text.endsWith(" : "));
+}
+
+double evaluate(const QString& expression) {
+    QStringList parts = expression.split(' ', Qt::SkipEmptyParts);
+    if (parts.size() % 2 == 0) {
+        return qQNaN();
+    }
+
+    for (int i = 1; i < parts.size(); i += 2) {
+        if (parts[i] == "*" || parts[i] == ":") {
+            double operand1 = parts[i - 1].toDouble();
+            double operand2 = parts[i + 1].toDouble();
+            double result = 0.0;
+
+            if (parts[i] == "*") {
+                result = operand1 * operand2;
+            } else if (parts[i] == ":") {
+                if (operand2 == 0.0) return qQNaN();
+                result = operand1 / operand2;
+            }
+            parts[i - 1] = QString::number(result);
+            parts.removeAt(i);
+            parts.removeAt(i);
+            i = 1;
+        }
+    }
+
+    if (parts.size() == 1) {
+        return parts[0].toDouble();
+    }
+
+    double total = parts[0].toDouble();
+
+    for (int i = 1; i < parts.size(); i += 2) {
+        if (parts[i] == "+") {
+            total += parts[i + 1].toDouble();
+        } else if (parts[i] == "-") {
+            total -= parts[i + 1].toDouble();
+        }
+    }
+
+    return total;
+}
+
+QString calculate(QString expression) {
+    int openCount = expression.count('(');
+    int closeCount = expression.count(')');
+
+    if (openCount != closeCount) {
+        return "ERROR: Mismatched Parentheses";
+    }
+
+    while (expression.contains('(')) {
+        int lastOpen = expression.lastIndexOf('(');
+        int firstClose = expression.indexOf(')', lastOpen);
+        if (lastOpen == -1 || firstClose == -1) {
+            return "ERROR";
+        }
+        QString innerExpression = expression.mid(lastOpen + 1, firstClose - lastOpen - 1);
+        double innerResult = evaluate(innerExpression);
+
+        if (qIsNaN(innerResult)) {
+            return "ERROR: Invalid Math";
+        }
+        expression.replace(lastOpen, firstClose - lastOpen + 1, QString::number(innerResult));
+    }
+
+    double finalResult = evaluate(expression);
+
+    if (qIsNaN(finalResult)) {
+        return "ERROR: Invalid Math";
+    }
+
+    return QString::number(finalResult);
 }
 
 int main(int argc, char* argv[])
@@ -212,7 +288,10 @@ int main(int argc, char* argv[])
 
     // Clear and delete buttons
 
-    QObject::connect(&clear, &QPushButton::clicked, [&]() { display.setText("0"); });
+    QObject::connect(&clear, &QPushButton::clicked, [&]()
+    {
+        display.setText("");
+    });
 
     QObject::connect(&deleteButton, &QPushButton::clicked, [&]()
     {
@@ -220,7 +299,7 @@ int main(int argc, char* argv[])
         if (currentText.length() > 1) {
             currentText.chop(1);
             display.setText(currentText);
-        } else if (currentText.length() == 1 && currentText != "0") {
+        } else if (currentText.length() == 1 && currentText != "") {
             display.setText("");
         }
     });
@@ -230,9 +309,24 @@ int main(int argc, char* argv[])
     QObject::connect(&equals, &QPushButton::clicked, [&]()
     {
         QString expression = display.text();
+        if (expression.isEmpty() || expression == "0")
+        {
+            display.setText("0");
+            return;
+        }
+        if (endsWithOperator(expression) || expression.endsWith("(")) {
+            display.setText("ERROR");
+            QTimer::singleShot(1000, [&display]() {
+                display.setText("");
+            });
+            return;
+        }
+
+        QString result = calculate(expression);
+        display.setText(result);
     });
 
     window.show();
 
-    return app.exec();
+    return QApplication::exec();
 }
