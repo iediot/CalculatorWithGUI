@@ -179,47 +179,61 @@ int main(int argc, char* argv[])
         }
     };
 
+    // Logic
+
+    int currCounter = 0;
+
     // Number buttons
 
     QObject::connect(&one, &QPushButton::clicked, [&]()
     {
         appendDigit("1");
+        currCounter++;
     });
     QObject::connect(&two, &QPushButton::clicked, [&]()
     {
         appendDigit("2");
+        currCounter++;
     });
     QObject::connect(&three, &QPushButton::clicked, [&]()
     {
         appendDigit("3");
+        currCounter++;
     });
     QObject::connect(&four, &QPushButton::clicked, [&]()
     {
         appendDigit("4");
+        currCounter++;
     });
     QObject::connect(&five, &QPushButton::clicked, [&]()
     {
         appendDigit("5");
+        currCounter++;
     });
     QObject::connect(&six, &QPushButton::clicked, [&]()
     {
         appendDigit("6");
+        currCounter++;
     });
     QObject::connect(&seven, &QPushButton::clicked, [&]()
     {
         appendDigit("7");
+        currCounter++;
     });
     QObject::connect(&eight, &QPushButton::clicked, [&]()
     {
         appendDigit("8");
+        currCounter++;
     });
     QObject::connect(&nine, &QPushButton::clicked, [&]()
     {
         appendDigit("9");
+        currCounter++;
     });
     QObject::connect(&zero, &QPushButton::clicked, [&]()
     {
         appendDigit("0");
+        currCounter++;
     });
 
     // Equation buttons
@@ -228,24 +242,28 @@ int main(int argc, char* argv[])
     {
         if (endsWithNumber(display.text())) {
             appendDigit(" + ");
+            currCounter += 3;
         }
     });
     QObject::connect(&subtraction, &QPushButton::clicked, [&]()
     {
         if (endsWithNumber(display.text())) {
             appendDigit(" - ");
+            currCounter += 3;
         }
     });
     QObject::connect(&multiplication, &QPushButton::clicked, [&]()
     {
         if (endsWithNumber(display.text())) {
             appendDigit(" * ");
+            currCounter += 3;
         }
     });
     QObject::connect(&division, &QPushButton::clicked, [&]()
     {
         if (endsWithNumber(display.text())) {
             appendDigit(" : ");
+            currCounter += 3;
         }
     });
 
